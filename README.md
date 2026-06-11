@@ -6,6 +6,26 @@
 
 Being an avid reader on my Windows 2 in 1, there is a dearth of truly lightweight, no clutter, and absolutely local storage based and no cloud fluff readers. While folks with iPads get to have their own fancy ass apps to read, we are stuck with 3rd grade readers, or god forbid Adobe Acrobat at best. Legere is something I made for myself, and I guess you might happen to like it too, to just read books on your laptop or 2in1. Feel free to contribute. Some of the technical details are entailed below.
 
+## Screenshots
+
+<p align="center">
+  <img src="library.png" alt="Library View" width="800" />
+  <br/>
+  <i>Clean, clutter-free library management</i>
+</p>
+
+<p align="center">
+  <img src="reader-vertical.png" alt="Reader View - Vertical Dock" width="800" />
+  <br/>
+  <i>Reading view with vertical annotation and scroll docks</i>
+</p>
+
+<p align="center">
+  <img src="reader-horizontal.png" alt="Reader View - Horizontal Dock" width="800" />
+  <br/>
+  <i>Reading view with horizontal dock auto-alignment</i>
+</p>
+
 ## Architecture
 
 This application is engineered with a strict focus on maximizing performance and minimizing resource consumption. It leverages the following core technologies:
