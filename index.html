@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEGERE</title>
+  <meta name="description" content="A beautiful PDF reader and annotator for your personal book library" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- ===== APP LAYOUT ===== -->
+    <div id="app-layout" class="app-layout">
+      <!-- ===== SIDEBAR ===== -->
+      <aside class="app-sidebar is-collapsed" id="app-sidebar">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">Library</h2>
+          <button class="sidebar-close" id="sidebar-close" aria-label="Close Sidebar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="sidebar-content">
+          <button class="folder-item folder-item--active" id="folder-all" data-path="all">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            All PDFs
+          </button>
+          
+          <div class="sidebar-divider"></div>
+          <h3 class="sidebar-section-title">Folders</h3>
+          <div class="sidebar-folder-list" id="sidebar-folder-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="btn-add-folder" id="sidebar-add-folder">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              <line x1="12" y1="11" x2="12" y2="17" />
+              <line x1="9" y1="14" x2="15" y2="14" />
+            </svg>
+            Add Folder
+          </button>
+        </div>
+      </aside>
+
+      <!-- ===== LIBRARY VIEW ===== -->
+      <div id="library-view" class="library-view">
+        <header class="library-header" data-tauri-drag-region>
+          <div class="library-header__brand" data-tauri-drag-region>
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle Sidebar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <svg class="brand-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f5f0e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4 Q 8 5 3 7 L 3 19 Q 8 20 12 22 Q 16 20 21 19 L 21 7 Q 16 5 12 4 Z" />
+              <line x1="12" y1="4" x2="12" y2="22" />
+            </svg>
+          <h1 class="library-header__title">LEGERE</h1>
+        </div>
+        <div class="search-bar">
+          <svg class="search-bar__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input type="text" id="search-input" class="search-bar__input" placeholder="Search your library..." />
+        </div>
+        <div class="library-stats" id="library-stats">
+          <span id="book-count">0 books</span>
+        </div>
+      </header>
+
+      <main class="library-content" id="library-content">
+        <!-- Book grid will be populated by JS -->
+        <div class="book-grid" id="book-grid"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <line x1="12" y1="8" x2="12" y2="14" />
+              <line x1="9" y1="11" x2="15" y2="11" />
+            </svg>
+          </div>
+          <h2 class="empty-title">Your library is empty</h2>
+          <p class="empty-subtitle">Upload your first PDF to get started</p>
+          <button class="empty-upload-btn" id="empty-upload-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              <line x1="12" y1="11" x2="12" y2="17" />
+              <line x1="9" y1="14" x2="15" y2="14" />
+            </svg>
+            Add Folder
+          </button>
+        </div>
+      </main>
+
+      <!-- Floating Add Folder Button -->
+      <button class="fab-upload" id="fab-upload" title="Add Folder">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          <line x1="12" y1="11" x2="12" y2="17" />
+          <line x1="9" y1="14" x2="15" y2="14" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- ===== READER VIEW ===== -->
+    <div id="reader-view" class="reader-view hidden">
+      <header class="reader-header" id="reader-header" data-tauri-drag-region>
+        <button class="reader-back-btn" id="reader-back-btn" title="Back to Library">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+        </button>
+        <h2 class="reader-title" id="reader-title">Book Title</h2>
+        <div class="reader-actions">
+          <button class="reader-action-btn" id="reader-save-btn" title="Save Annotations (Ctrl+S)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Save
+          </button>
+          <button class="reader-action-btn" id="reader-export-btn" title="Export Flattened PDF">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export PDF
+          </button>
+        </div>
+        <div class="reader-page-info" id="reader-page-info">Page 1 of 1</div>
+      </header>
+
+      <!-- Tiny Top Bar Toggle -->
+      <button class="topbar-toggle-btn" id="topbar-toggle-btn" title="Toggle Top Bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+
+      <!-- Annotation Toolbar -->
+      <div class="toolbar" id="annotation-toolbar">
+        <div class="toolbar-inner" id="toolbar-inner">
+          <!-- Drag Handle -->
+          <div class="toolbar-drag-handle" id="toolbar-drag-handle" title="Drag to move">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+
+          <!-- Undo/Redo Group -->
+          <div class="tool-group">
+            <button class="tool-btn" id="tool-undo" title="Undo (Ctrl+Z)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="tool-redo" title="Redo (Ctrl+Y)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Zoom Controls -->
+          <div class="tool-group">
+            <button class="tool-btn" id="tool-zoom-in" title="Zoom In">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <line x1="11" y1="8" x2="11" y2="14" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="tool-zoom-out" title="Zoom Out">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Selection & Navigation -->
+          <div class="tool-group">
+            <button class="tool-btn active" id="tool-select" title="Select (V)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="tool-hand" title="Hand / Pan (H)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 11V6a2 2 0 0 0-4 0v1" />
+                <path d="M14 10V4a2 2 0 0 0-4 0v2" />
+                <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
+                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Pen Tools -->
+          <div class="tool-group" id="pen-tools-group">
+            <button class="tool-btn pen-tool" id="tool-pen" title="Pen (P)" data-tool="pen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19l7-7 3 3-7 7-3-3z" />
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+                <path d="M2 2l7.586 7.586" />
+                <circle cx="11" cy="11" r="2" />
+              </svg>
+            </button>
+            <button class="tool-btn pen-tool" id="tool-highlighter" title="Highlighter (G)" data-tool="highlighter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l-6 6v3h9l3-3" />
+                <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
+              </svg>
+            </button>
+            <button class="tool-btn pen-tool" id="tool-eraser" title="Eraser (E)" data-tool="eraser">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 20H7L3 16a1 1 0 0 1 0-1.41l9.59-9.59a2 2 0 0 1 2.82 0l5.17 5.17a2 2 0 0 1 0 2.82L12 21" />
+                <line x1="6" y1="21" x2="20" y2="21" />
+              </svg>
+            </button>
+            <button class="tool-btn pen-tool" id="tool-text" title="Text (T)" data-tool="text">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 7 4 4 20 4 20 7" />
+                <line x1="9" y1="20" x2="15" y2="20" />
+                <line x1="12" y1="4" x2="12" y2="20" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Color Swatches -->
+          <div class="tool-group color-swatches" id="color-swatches">
+            <button class="color-swatch active" data-color="#1a1a1a" style="background:#1a1a1a" title="Black"></button>
+            <button class="color-swatch" data-color="#8b0000" style="background:#8b0000" title="Dark Red"></button>
+            <button class="color-swatch" data-color="#ff3333" style="background:#ff3333" title="Red"></button>
+            <button class="color-swatch" data-color="#ff8c00" style="background:#ff8c00" title="Orange"></button>
+            <button class="color-swatch" data-color="#00aa55" style="background:#00aa55" title="Green"></button>
+            <button class="color-swatch" data-color="#2266cc" style="background:#2266cc" title="Blue"></button>
+            <button class="color-swatch" data-color="#7733bb" style="background:#7733bb" title="Purple"></button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Highlighter Colors -->
+          <div class="tool-group highlight-swatches" id="highlight-swatches">
+            <button class="color-swatch highlight-swatch" data-color="rgba(255,235,59,0.35)" style="background:rgba(255,235,59,0.6)" title="Yellow Highlight"></button>
+            <button class="color-swatch highlight-swatch" data-color="rgba(76,175,80,0.35)" style="background:rgba(76,175,80,0.6)" title="Green Highlight"></button>
+            <button class="color-swatch highlight-swatch" data-color="rgba(233,30,99,0.35)" style="background:rgba(233,30,99,0.6)" title="Pink Highlight"></button>
+            <button class="color-swatch highlight-swatch" data-color="rgba(255,152,0,0.35)" style="background:rgba(255,152,0,0.6)" title="Orange Highlight"></button>
+          </div>
+
+          <div class="tool-divider"></div>
+
+          <!-- Stroke Width -->
+          <div class="tool-group stroke-group">
+            <label class="stroke-label" title="Stroke Width">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+              </svg>
+              <input type="range" id="stroke-width" class="stroke-slider" min="1" max="20" value="3" />
+              <span id="stroke-width-value" class="stroke-value">3</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Floating Scroll Dock -->
+      <div class="scroll-dock" id="scroll-dock">
+        <div class="scroll-dock-handle" id="scroll-dock-handle" title="Drag to snap to corner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="12" r="1" />
+            <circle cx="9" cy="5" r="1" />
+            <circle cx="9" cy="19" r="1" />
+            <circle cx="15" cy="12" r="1" />
+            <circle cx="15" cy="5" r="1" />
+            <circle cx="15" cy="19" r="1" />
+          </svg>
+        </div>
+        <button class="scroll-dock-btn" id="scroll-dock-up" title="Scroll Up">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
+        <button class="scroll-dock-btn" id="scroll-dock-down" title="Scroll Down">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- PDF Content Area -->
+      <div class="reader-content" id="reader-content">
+        <div class="pdf-pages" id="pdf-pages">
+
+          <!-- Pages will be dynamically inserted here -->
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="pdf-loading" id="pdf-loading">
+          <div class="spinner"></div>
+          <p>Loading PDF...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast" id="toast">
+      <div class="toast-message" id="toast-message">Saved successfully!</div>
+    </div>
+
+    <!-- ===== CONTEXT MENU ===== -->
+    <div class="context-menu hidden" id="context-menu">
+      <button class="context-item" id="ctx-open">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Open
+      </button>
+      <button class="context-item" id="ctx-rename">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        Rename
+      </button>
+      <div class="context-divider"></div>
+      <button class="context-item context-danger" id="ctx-delete">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Delete
+      </button>
+    </div>
+  </div> <!-- Closes app-layout -->
+  </div> <!-- Closes app -->
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

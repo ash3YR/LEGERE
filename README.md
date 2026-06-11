@@ -1,0 +1,76 @@
+<p align="center">
+  <img src="Banner.png" alt="Legere Banner" width="100%" />
+</p>
+
+# Legere - Modern PDF Reader
+
+Legere is a blazingly fast, highly optimized, and aesthetically stunning desktop PDF reader built with Tauri. It features a frameless design, powerful annotation capabilities, and a library management system.
+
+## Architecture
+
+This application is engineered with a strict focus on maximizing performance and minimizing resource consumption. It leverages the following core technologies:
+
+- **Tauri & Rust:** Powers the native desktop window and file system interactions. Unlike Electron, Tauri uses the OS's native webview (WebView2 on Windows), resulting in a tiny app bundle size and a minimal RAM/CPU footprint.
+- **Vanilla JavaScript & CSS:** The frontend is entirely devoid of heavy UI frameworks like React or Angular. This ensures lightning-fast load times, zero Virtual DOM overhead, and direct, highly efficient DOM manipulation.
+- **Vite:** Serves as the modern frontend build tool, providing instant Hot Module Replacement (HMR) during development and highly optimized, minified bundles for production.
+- **PDF.js (Mozilla):** The industry-standard core engine used for parsing and rendering PDF documents.
+- **Fabric.js:** An HTML5 canvas library layered perfectly on top of the rendered PDF pages to handle high-performance vector-based annotations (drawing, highlighting, text).
+- **IndexedDB:** A robust client-side storage API used to maintain the book library metadata, thumbnails, and state, ensuring instant startup.
+
+## Technical Innovations
+
+### Lazy Page Rendering
+To ensure the app remains ultra-responsive even when loading 1,000+ page textbooks, the PDF rendering engine utilizes an `IntersectionObserver`. Pages are strictly rendered onto the GPU canvas *only* when they are actively scrolled into the viewport. This keeps memory consumption completely flat regardless of document length.
+
+### Debounced Background Saving
+Annotations are automatically saved, but to prevent hard drive thrashing, all draw events are batched and debounced. The data is cleanly serialized into JSON and saved alongside the PDF file automatically in the background.
+
+### Hardware-Accelerated Smooth Scrolling
+The custom floating scroll dock bypasses native jumpy scroll events by utilizing a `requestAnimationFrame` loop. This delegates the scrolling math directly to the display's native refresh rate, resulting in a buttery-smooth panning experience without jitter.
+
+## Directory Structure
+
+```text
+READER/
+├── src/                    # Frontend Vanilla JS application
+│   ├── components/         # UI Components (Toolbar, Book cards)
+│   ├── lib/                # Core logic (PDF renderer, IndexedDB storage)
+│   ├── styles/             # Global CSS and custom styling
+│   └── main.js             # Main application entry point & event bindings
+├── src-tauri/              # Native Rust backend & OS configurations
+│   ├── src/                # Rust source code
+│   ├── icons/              # Application icons
+│   └── tauri.conf.json     # Core Tauri configuration & window settings
+├── dist/                   # Compiled and minified production build
+├── index.html              # Main HTML skeleton
+├── package.json            # Node.js dependencies and build scripts
+└── vite.config.js          # Vite bundler configuration
+```
+
+## Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/)
+- [Rust & Cargo](https://rustup.rs/) (Required for compiling the native Tauri backend)
+
+### Installation & Build
+
+1. **Install JavaScript dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Run the development server:**
+   ```bash
+   npm run tauri dev
+   ```
+
+3. **Build the final Windows Installer executable:**
+   ```bash
+   npm run tauri build
+   ```
+   *The final MSI installer will be located in `src-tauri/target/release/bundle/msi/`.*
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
