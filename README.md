@@ -2,9 +2,9 @@
   <img src="Banner.png" alt="Legere Banner" width="100%" />
 </p>
 
-# Legere - Modern PDF Reader
+# Legere
 
-Legere is a blazingly fast, highly optimized, and aesthetically stunning desktop PDF reader built with Tauri. It features a frameless design, powerful annotation capabilities, and a library management system.
+Being an avid reader on my Windows 2 in 1, there is a dearth of truly lightweight, no clutter, and absolutely local storage based and no cloud fluff readers. While folks with iPads get to have their own fancy ass apps to read, we are stuck with 3rd grade readers, or god forbid Adobe Acrobat at best. Legere is something I made for myself, and I guess you might happen to like it too, to just read books on your laptop or 2in1. Feel free to contribute. Some of the technical details are entailed below.
 
 ## Architecture
 
