@@ -221,15 +221,11 @@ export class AnnotationToolbar {
       // Restore transition
       this.toolbar.style.transition = '';
 
-      // Calculate closest edge to snap to
-      const rect = this.toolbar.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-
-      const distTop = centerY;
-      const distBottom = window.innerHeight - centerY;
-      const distLeft = centerX;
-      const distRight = window.innerWidth - centerX;
+      // Calculate closest edge to snap to based on mouse drop position
+      const distTop = e.clientY;
+      const distBottom = window.innerHeight - e.clientY;
+      const distLeft = e.clientX;
+      const distRight = window.innerWidth - e.clientX;
 
       const minDist = Math.min(distTop, distBottom, distLeft, distRight);
 
@@ -410,6 +406,12 @@ export class AnnotationToolbar {
    */
   _applyToolToCanvas(canvas) {
     const tool = this.state.activeTool;
+    const isDrawing = tool === 'pen' || tool === 'highlighter';
+
+    // Toggle class to enable/disable touch-action: none for scrolling
+    if (canvas.wrapperEl) {
+      canvas.wrapperEl.classList.toggle('is-drawing', isDrawing);
+    }
 
     switch (tool) {
       case 'select':
@@ -432,7 +434,6 @@ export class AnnotationToolbar {
         canvas.freeDrawingBrush = new PencilBrush(canvas);
         canvas.freeDrawingBrush.color = this.state.penColor;
         canvas.freeDrawingBrush.width = this.state.strokeWidth;
-        canvas.freeDrawingBrush.decimate = 4; // smooth lines
         break;
 
       case 'highlighter':
@@ -441,7 +442,6 @@ export class AnnotationToolbar {
         canvas.freeDrawingBrush = new PencilBrush(canvas);
         canvas.freeDrawingBrush.color = this.state.highlightColor;
         canvas.freeDrawingBrush.width = Math.max(this.state.strokeWidth * 4, 16);
-        canvas.freeDrawingBrush.decimate = 2;
         break;
 
       case 'eraser':

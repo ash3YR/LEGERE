@@ -385,6 +385,24 @@ ul, ol {
   transition: all var(--duration-fast);
 }
 
+.sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sidebar-info-btn {
+  color: var(--clr-text-muted);
+  transition: color var(--duration-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-info-btn:hover {
+  color: var(--clr-accent-gold);
+}
+
 .btn-add-folder:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--clr-accent-purple);
@@ -704,7 +722,7 @@ ul, ol {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-2) 56px var(--space-2) var(--space-4);
+  padding: var(--space-2) 96px var(--space-2) var(--space-4);
   background: rgba(26, 10, 10, 0.9);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -719,10 +737,9 @@ ul, ol {
 }
 
 /* --- Top Bar Toggle Button --- */
-.topbar-toggle-btn {
+.topbar-toggle-btn, .fullscreen-toggle-btn {
   position: absolute;
   top: 8px;
-  right: 12px;
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm);
@@ -739,18 +756,26 @@ ul, ol {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.topbar-toggle-btn:hover {
+.topbar-toggle-btn { right: 12px; }
+.fullscreen-toggle-btn { right: 52px; }
+
+.topbar-toggle-btn:hover, .fullscreen-toggle-btn:hover {
   color: var(--clr-text-primary);
   background: rgba(40, 40, 45, 0.8);
   border-color: var(--clr-accent-gold);
 }
 
-.topbar-toggle-btn svg {
+.topbar-toggle-btn svg, .fullscreen-toggle-btn svg {
   transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .topbar-toggle-btn.is-collapsed svg {
   transform: rotate(180deg);
+}
+
+.fullscreen-toggle-btn.is-active {
+  color: var(--clr-accent-gold);
+  background: rgba(201, 135, 58, 0.12);
 }
 
 .reader-header__back-btn {
@@ -777,6 +802,39 @@ ul, ol {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.reader-page-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.page-input {
+  width: 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--clr-text-primary);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  padding: 4px;
+}
+
+.page-input:focus {
+  outline: none;
+  border-color: var(--clr-accent-gold);
+}
+
+/* Hide default number input arrows */
+.page-input::-webkit-outer-spin-button,
+.page-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.page-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .reader-header__actions {
@@ -859,6 +917,10 @@ ul, ol {
   top: 0 !important;
   left: 0 !important;
   z-index: 2;
+}
+
+.canvas-container.is-drawing {
+  touch-action: none !important;
 }
 
 /* Text selection layer */

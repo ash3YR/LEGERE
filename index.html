@@ -17,12 +17,21 @@
       <aside class="app-sidebar is-collapsed" id="app-sidebar">
         <div class="sidebar-header">
           <h2 class="sidebar-title">Library</h2>
-          <button class="sidebar-close" id="sidebar-close" aria-label="Close Sidebar">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div class="sidebar-header-actions">
+            <button class="sidebar-info-btn" id="sidebar-info-btn" aria-label="About Legere" title="About Legere">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </button>
+            <button class="sidebar-close" id="sidebar-close" aria-label="Close Sidebar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
         
         <div class="sidebar-content">
@@ -147,8 +156,17 @@
             Export PDF
           </button>
         </div>
-        <div class="reader-page-info" id="reader-page-info">Page 1 of 1</div>
+        <div class="reader-page-info" id="reader-page-info">
+          Page <input type="number" id="page-input" class="page-input" min="1" value="1" /> <span id="page-total">of 1</span>
+        </div>
       </header>
+
+      <!-- Fullscreen Toggle -->
+      <button class="fullscreen-toggle-btn" id="fullscreen-toggle-btn" title="Toggle Fullscreen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+      </button>
 
       <!-- Tiny Top Bar Toggle -->
       <button class="topbar-toggle-btn" id="topbar-toggle-btn" title="Toggle Top Bar">
@@ -362,6 +380,42 @@
     </div>
   </div> <!-- Closes app-layout -->
   </div> <!-- Closes app -->
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal-overlay hidden">
+      <div class="modal-content about-content">
+        <button class="modal-close" id="about-close" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        
+        <div class="about-header">
+          <svg class="brand-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c9873a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4 Q 8 5 3 7 L 3 19 Q 8 20 12 22 Q 16 20 21 19 L 21 7 Q 16 5 12 4 Z" />
+            <line x1="12" y1="4" x2="12" y2="22" />
+          </svg>
+          <h2 class="about-title">Legere</h2>
+          <span class="about-version">v1.2</span>
+        </div>
+        
+        <p class="about-desc">
+          A beautifully designed, blazingly fast, and purely local PDF reader for your  book collection.
+          <br>><br>
+          Built with 🤍 by Yash.
+        </p>
+        
+        <div class="about-links">
+          <a href="https://github.com/ash3YR/LEGERE.git" target="_blank" rel="noopener noreferrer" class="about-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            GitHub Repo
+          </a>
+        </div>
+      </div>
+    </div>
 
   <script type="module" src="/src/main.js"></script>
 </body>

@@ -329,8 +329,10 @@ async function openBook(bookId) {
       state.annotations = JSON.parse(text);
     }
 
-    document.getElementById('reader-page-info').textContent =
-      `${state.totalPages} pages`;
+    document.getElementById('page-total').textContent = `of ${state.totalPages}`;
+    const pageInput = document.getElementById('page-input');
+    pageInput.max = state.totalPages;
+    pageInput.value = 1;
 
     // Create page containers
     const pagesContainer = document.getElementById('pdf-pages');
@@ -450,6 +452,7 @@ async function renderPageInContainer(pageNum) {
     const fabricCanvas = new Canvas(annotCanvasEl, {
       isDrawingMode: false,
       enableRetinaScaling: true,
+      allowTouchScrolling: true,
       width: width,
       height: height,
     });
@@ -601,8 +604,10 @@ function showToast(msg) {
  * @param {number} pageNum
  */
 function updatePageInfo(pageNum) {
-  document.getElementById('reader-page-info').textContent =
-    `Page ${pageNum} of ${state.totalPages}`;
+  const input = document.getElementById('page-input');
+  if (input && document.activeElement !== input) {
+    input.value = pageNum;
+  }
 }
 
 /**
@@ -748,22 +753,20 @@ function initScrollDock() {
   function snapDock(cx, cy) {
     const readerView = document.getElementById('reader-view');
     const viewRect = readerView.getBoundingClientRect();
+    const dockRect = dock.getBoundingClientRect();
 
     const isLeft = cx < viewRect.left + viewRect.width / 2;
-    const isTop = cy < viewRect.top + viewRect.height / 2;
 
     dock.style.left = 'auto';
     dock.style.right = 'auto';
     dock.style.top = 'auto';
     dock.style.bottom = 'auto';
 
-    let targetTop = null;
-    let targetBottom = null;
     let targetLeft = null;
     let targetRight = null;
-
-    if (isTop) targetTop = 24;
-    else targetBottom = 24;
+    
+    // Clamp vertical position so it stays on screen
+    let targetTop = Math.max(24, Math.min(cy - dockRect.height / 2, window.innerHeight - dockRect.height - 24));
 
     if (isLeft) targetLeft = 24;
     else targetRight = 24;
@@ -779,23 +782,21 @@ function initScrollDock() {
       if (isLeft && isMainDockLeft) {
         const gap = mainRect.left;
         targetLeft = mainRect.right + gap;
-        if (!isTop) targetBottom = window.innerHeight - mainRect.bottom;
-        if (isTop) targetTop = mainRect.top;
       } else if (!isLeft && isMainDockRight) {
         const gap = window.innerWidth - mainRect.right;
         targetRight = window.innerWidth - mainRect.left + gap;
-        if (!isTop) targetBottom = window.innerHeight - mainRect.bottom;
-        if (isTop) targetTop = mainRect.top;
-      } else if (!isTop && isMainDockBottom) {
-        const gap = window.innerHeight - mainRect.bottom;
-        targetBottom = window.innerHeight - mainRect.top + gap;
-      } else if (isTop && isMainDockTop) {
-        targetTop = mainRect.bottom + 24;
+      }
+      
+      // Prevent overlap if main toolbar is at top/bottom
+      if (isMainDockTop && targetTop < mainRect.bottom + 24) {
+         targetTop = mainRect.bottom + 24;
+      }
+      if (isMainDockBottom && targetTop + dockRect.height > mainRect.top - 24) {
+         targetTop = mainRect.top - dockRect.height - 24;
       }
     }
 
-    if (targetTop !== null) dock.style.top = `${targetTop}px`;
-    if (targetBottom !== null) dock.style.bottom = `${targetBottom}px`;
+    dock.style.top = `${targetTop}px`;
     if (targetLeft !== null) dock.style.left = `${targetLeft}px`;
     if (targetRight !== null) dock.style.right = `${targetRight}px`;
   }
@@ -891,6 +892,14 @@ function bindGlobalEvents() {
     sidebar.classList.add('is-collapsed');
   });
 
+  document.getElementById('sidebar-info-btn')?.addEventListener('click', () => {
+    document.getElementById('about-modal')?.classList.remove('hidden');
+  });
+
+  document.getElementById('about-close')?.addEventListener('click', () => {
+    document.getElementById('about-modal')?.classList.add('hidden');
+  });
+
   // Reader actions
   document.getElementById('reader-save-btn')?.addEventListener('click', handleSaveAnnotations);
   document.getElementById('reader-export-btn')?.addEventListener('click', handleExportPDF);
@@ -903,12 +912,37 @@ function bindGlobalEvents() {
     btn.classList.toggle('is-collapsed');
   });
 
+  // Fullscreen toggle
+  document.getElementById('fullscreen-toggle-btn')?.addEventListener('click', async (e) => {
+    try {
+      const window = getCurrentWindow();
+      const isFullscreen = await window.isFullscreen();
+      await window.setFullscreen(!isFullscreen);
+      e.currentTarget.classList.toggle('is-active', !isFullscreen);
+    } catch (err) {
+      console.error('Failed to toggle fullscreen:', err);
+    }
+  });
+
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 's') {
       e.preventDefault();
       if (state.currentView === 'reader') {
         handleSaveAnnotations();
       }
+    }
+  });
+
+  // Page input jump
+  document.getElementById('page-input')?.addEventListener('change', (e) => {
+    let pageNum = parseInt(e.target.value, 10);
+    if (isNaN(pageNum)) return;
+    pageNum = Math.max(1, Math.min(pageNum, state.totalPages));
+    e.target.value = pageNum;
+    
+    const pageEl = document.getElementById(`page-${pageNum}`);
+    if (pageEl) {
+      pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 
