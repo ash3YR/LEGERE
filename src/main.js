@@ -650,9 +650,16 @@ function closeReader() {
  * @param {number} level
  */
 function setZoom(level) {
+  const scrollContainer = document.getElementById('reader-content');
+  let scrollRatio = 0;
+  if (scrollContainer && scrollContainer.scrollHeight > 0) {
+    scrollRatio = scrollContainer.scrollTop / scrollContainer.scrollHeight;
+  }
+
   // Clamp zoom between 0.3 and 3.0
   state.zoom = Math.max(0.3, Math.min(3.0, level));
   const pages = document.getElementById('pdf-pages');
+  
   if (pages) {
     // We use the 'zoom' CSS property because Tauri uses Edge WebView2 (Chromium).
     // This perfectly recalibrates the layout and scroll container, 
@@ -662,6 +669,13 @@ function setZoom(level) {
     // Clear transform from previous version if it exists
     pages.style.transform = 'none';
     pages.style.marginBottom = '0px';
+
+    // Restore scroll position so the view doesn't jump to random pages
+    if (scrollContainer) {
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = scrollRatio * scrollContainer.scrollHeight;
+      });
+    }
   }
 }
 
