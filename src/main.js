@@ -1081,6 +1081,25 @@ function bindGlobalEvents() {
       return;
     }
 
+    // Zoom shortcuts
+    if (e.key === '=' || e.key === '+') {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (state.currentView === 'reader') {
+        setZoom(state.zoom + 0.1);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === '-') {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (state.currentView === 'reader') {
+        setZoom(Math.max(0.2, state.zoom - 0.1));
+        e.preventDefault();
+      }
+      return;
+    }
+
     // ArrowLeft to go back to library
     if (e.key === 'ArrowLeft') {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
