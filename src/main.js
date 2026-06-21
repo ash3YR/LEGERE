@@ -12,6 +12,7 @@ import { createBookCard } from './components/bookCard.js';
 import { AnnotationToolbar } from './components/toolbar.js';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { readDir, readFile, writeFile, writeTextFile, readTextFile, exists } from '@tauri-apps/plugin-fs';
+import { open as openUrl } from '@tauri-apps/plugin-shell';
 import { join } from '@tauri-apps/api/path';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { PDFDocument } from 'pdf-lib';
@@ -347,10 +348,16 @@ async function openBook(bookId) {
     // Set up intersection observer for lazy rendering
     setupLazyRendering();
 
+    // Auto-align the scroll dock to the main toolbar if not manually dragged
+    if (window.autoAlignScrollDock) {
+      // Small delay to ensure the DOM layout for the main toolbar has fully calculated its height
+      setTimeout(() => window.autoAlignScrollDock(), 50);
+    }
+
   } catch (err) {
-    console.error('Failed to load PDF:', err);
-    document.getElementById('pdf-loading').innerHTML =
-      '<p class="error-text">Failed to load PDF. The file may be corrupted.</p>';
+    console.error('Failed to open book:', err);
+    alert('Failed to load PDF file.');
+    closeReader();
   }
 }
 
@@ -730,6 +737,7 @@ function initScrollDock() {
 
   function handleDragStart(e) {
     isDragging = true;
+    window.__scrollDockManuallyDragged = true;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     startX = clientX;
@@ -830,11 +838,44 @@ function initScrollDock() {
   document.addEventListener('mouseup', handleDragEnd);
   document.addEventListener('touchend', handleDragEnd);
 
-  // Auto-adjust initial position after a brief delay to ensure main toolbar is loaded
-  setTimeout(() => {
-    const rect = dock.getBoundingClientRect();
-    snapDock(rect.left + rect.width / 2, rect.top + rect.height / 2);
-  }, 100);
+  window.autoAlignScrollDock = () => {
+    if (window.__scrollDockManuallyDragged) return;
+    const mainToolbar = document.getElementById('annotation-toolbar');
+    if (!mainToolbar) return;
+    
+    if (mainToolbar.offsetHeight === 0) return;
+
+    let targetBottom = 'auto';
+    let targetTop = 'auto';
+    let targetLeft = 'auto';
+    let targetRight = 'auto';
+    
+    const gap = 16;
+    const margin = 24; // .toolbar has 24px margin to screen edges
+    
+    if (mainToolbar.classList.contains('dock-right')) {
+      targetRight = margin + mainToolbar.offsetWidth + gap;
+      targetBottom = Math.max(margin, (window.innerHeight / 2) - (mainToolbar.offsetHeight / 2));
+    } else if (mainToolbar.classList.contains('dock-left')) {
+      targetLeft = margin + mainToolbar.offsetWidth + gap;
+      targetBottom = Math.max(margin, (window.innerHeight / 2) - (mainToolbar.offsetHeight / 2));
+    } else if (mainToolbar.classList.contains('dock-top')) {
+      targetTop = margin + mainToolbar.offsetHeight + gap;
+      targetRight = margin;
+    } else if (mainToolbar.classList.contains('dock-bottom')) {
+      targetBottom = margin + mainToolbar.offsetHeight + gap;
+      targetRight = margin;
+    } else {
+      // Fallback
+      targetBottom = margin;
+      targetRight = margin + mainToolbar.offsetWidth + gap;
+    }
+
+    dock.style.top = targetTop === 'auto' ? 'auto' : `${targetTop}px`;
+    dock.style.bottom = targetBottom === 'auto' ? 'auto' : `${targetBottom}px`;
+    dock.style.left = targetLeft === 'auto' ? 'auto' : `${targetLeft}px`;
+    dock.style.right = targetRight === 'auto' ? 'auto' : `${targetRight}px`;
+  };
 
   // --- Smooth Scrolling Logic ---
   let scrollRAF = null;
@@ -914,9 +955,19 @@ function bindGlobalEvents() {
     document.getElementById('about-modal')?.classList.add('hidden');
   });
 
+  document.getElementById('github-link')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await openUrl(e.currentTarget.href);
+    } catch (err) {
+      console.error('Failed to open external link:', err);
+    }
+  });
+
   // Reader actions
   document.getElementById('reader-save-btn')?.addEventListener('click', handleSaveAnnotations);
   document.getElementById('reader-export-btn')?.addEventListener('click', handleExportPDF);
+  document.getElementById('reader-back-btn')?.addEventListener('click', closeReader);
 
   // Top bar toggle
   document.getElementById('topbar-toggle-btn')?.addEventListener('click', (e) => {
@@ -927,15 +978,31 @@ function bindGlobalEvents() {
   });
 
   // Fullscreen toggle
-  document.getElementById('fullscreen-toggle-btn')?.addEventListener('click', async (e) => {
+  async function toggleAppFullscreen(forceState = null) {
     try {
-      const window = getCurrentWindow();
-      const isFullscreen = await window.isFullscreen();
-      await window.setFullscreen(!isFullscreen);
-      e.currentTarget.classList.toggle('is-active', !isFullscreen);
+      const appWindow = getCurrentWindow();
+      const isFullscreen = await appWindow.isFullscreen();
+      const newState = forceState !== null ? forceState : !isFullscreen;
+      if (isFullscreen === newState) return;
+      
+      await appWindow.setFullscreen(newState);
+      document.getElementById('fullscreen-toggle-btn')?.classList.toggle('is-active', newState);
+      
+      // Hide headers in fullscreen mode
+      const readerHeader = document.getElementById('reader-header');
+      if (readerHeader) readerHeader.style.display = newState ? 'none' : '';
+      
+      // Recalculate dock position if reader is open
+      if (window.autoAlignScrollDock) {
+        setTimeout(() => window.autoAlignScrollDock(), 100);
+      }
     } catch (err) {
       console.error('Failed to toggle fullscreen:', err);
     }
+  }
+
+  document.getElementById('fullscreen-toggle-btn')?.addEventListener('click', () => {
+    toggleAppFullscreen();
   });
 
   window.addEventListener('keydown', (e) => {
@@ -959,9 +1026,6 @@ function bindGlobalEvents() {
       pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
-
-  // Reader back button
-  document.getElementById('reader-back-btn')?.addEventListener('click', closeReader);
 
   // Add Zoom button handlers
   document.getElementById('tool-zoom-in')?.addEventListener('click', () => {
@@ -1006,12 +1070,35 @@ function bindGlobalEvents() {
     }
   });
 
-  // Escape key
-  document.addEventListener('keydown', (e) => {
+  // Keydown events (Escape and F)
+  document.addEventListener('keydown', async (e) => {
+    // F key to toggle fullscreen
+    if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      // Don't trigger if typing in an input field
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      
+      toggleAppFullscreen();
+      return;
+    }
+
+    // ArrowLeft to go back to library
+    if (e.key === 'ArrowLeft') {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (state.currentView === 'reader') {
+        closeReader();
+        e.preventDefault();
+      }
+      return;
+    }
+
     if (e.key === 'Escape') {
+      toggleAppFullscreen(false);
+
       hideContextMenu();
       if (document.getElementById('upload-modal').classList.contains('hidden') === false) {
         closeModal();
+      } else if (document.getElementById('about-modal').classList.contains('hidden') === false) {
+        document.getElementById('about-modal').classList.add('hidden');
       } else if (state.currentView === 'reader') {
         closeReader();
       }

@@ -2,7 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/nicovank/tauri-v2-schema/v2/schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "dialog:default",
@@ -19,7 +21,12 @@
     "core:window:allow-is-fullscreen",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "**" }]
-    }
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    "shell:default"
   ]
 }

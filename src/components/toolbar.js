@@ -303,11 +303,17 @@ export class AnnotationToolbar {
         this.redo();
       } else if (!e.ctrlKey && !e.altKey) {
         switch (e.key.toLowerCase()) {
+          case '1':
           case 'v': this.setTool('select'); break;
+          case '2':
           case 'h': this.setTool('hand'); break;
+          case '3':
           case 'p': this.setTool('pen'); break;
+          case '4':
           case 'g': this.setTool('highlighter'); break;
+          case '5':
           case 'e': this.setTool('eraser'); break;
+          case '6':
           case 't': this.setTool('text'); break;
         }
       }
