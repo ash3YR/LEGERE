@@ -969,6 +969,11 @@ function bindGlobalEvents() {
   document.getElementById('reader-export-btn')?.addEventListener('click', handleExportPDF);
   document.getElementById('reader-back-btn')?.addEventListener('click', closeReader);
 
+  document.getElementById('reader-dark-mode-btn')?.addEventListener('click', (e) => {
+    document.body.classList.toggle('dark-reader');
+    e.currentTarget.classList.toggle('active');
+  });
+
   // Top bar toggle
   document.getElementById('topbar-toggle-btn')?.addEventListener('click', (e) => {
     const header = document.getElementById('reader-header');

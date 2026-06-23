@@ -2509,3 +2509,21 @@ ul, ol {
 .scroll-dock-btn:active {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* ============================================================
+   DARK MODE READER
+   ============================================================ */
+body.dark-reader .pdf-pages {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+body.dark-reader .pdf-canvas,
+body.dark-reader .annotation-canvas {
+  mix-blend-mode: normal;
+}
+
+.reader-action-btn.active {
+  color: var(--clr-accent-gold);
+  background: var(--glass-bg-active);
+}
+
