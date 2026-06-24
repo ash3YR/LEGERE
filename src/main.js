@@ -485,6 +485,12 @@ async function renderPageInContainer(pageNum) {
     fabricCanvas.on('object:removed', () => {
       debouncedSaveAnnotations(pageNum, fabricCanvas);
     });
+    fabricCanvas.on('object:added', () => {
+      debouncedSaveAnnotations(pageNum, fabricCanvas);
+    });
+    fabricCanvas.on('text:changed', () => {
+      debouncedSaveAnnotations(pageNum, fabricCanvas);
+    });
 
     // Hide placeholder
     if (placeholder) placeholder.classList.add('hidden');
@@ -1083,6 +1089,17 @@ function bindGlobalEvents() {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
       
       toggleAppFullscreen();
+      return;
+    }
+
+    // D key to toggle dark mode
+    if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (state.currentView === 'reader') {
+        document.body.classList.toggle('dark-reader');
+        document.getElementById('reader-dark-mode-btn')?.classList.toggle('active');
+        e.preventDefault();
+      }
       return;
     }
 
